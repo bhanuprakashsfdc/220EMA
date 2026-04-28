@@ -6,7 +6,7 @@ from datetime import datetime
 # -------- CONFIG --------
 INPUT_FILE = "nifty500_symbols.csv"
 OUTPUT_FOLDER = "data"
-START_DATE = "2010-01-01"
+START_DATE = "2020-01-01"
 END_DATE = datetime.today().strftime('%Y-%m-%d')
 
 # Ensure output folder exists
@@ -43,16 +43,16 @@ for symbol in symbols:
             print(f"⚠️ No data for {symbol}")
             continue
 
-         # Reset index for clean CSV
-         df.reset_index(inplace=True)
+        # Reset index for clean CSV
+        df.reset_index(inplace=True)
 
-         # Flatten multi-level columns (yfinance returns symbol as second level)
-         if isinstance(df.columns, pd.MultiIndex):
-             df.columns = [col[0] for col in df.columns]
+        # Flatten multi-level columns (yfinance returns symbol as second level)
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = [col[0] for col in df.columns]
 
-         # Save file
-         filename = os.path.join(OUTPUT_FOLDER, f"{symbol.replace('.NS','')}.csv")
-         df.to_csv(filename, index=False)
+        # Save file
+        filename = os.path.join(OUTPUT_FOLDER, f"{symbol.replace('.NS','')}.csv")
+        df.to_csv(filename, index=False)
 
     except Exception as e:
         print(f"❌ Error downloading {symbol}: {e}")

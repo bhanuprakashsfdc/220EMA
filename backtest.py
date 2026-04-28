@@ -27,7 +27,7 @@ def load_data():
             if len(df) < MIN_DAYS:
                 continue
 
-            df["Price"] = df["Adj Close"]
+            df["Price"] = df["Close"]
 
             # Indicators
             df["EMA220"] = df["Price"].ewm(span=EMA_PERIOD).mean()
@@ -179,7 +179,10 @@ def compute_metrics(portfolio_df):
 # ---------------- BENCHMARK ----------------
 def get_benchmark(start, end):
     df = yf.download(BENCHMARK, start=start, end=end, progress=False)
-    df["Returns"] = df["Adj Close"].pct_change()
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    close_col = "Adj Close" if "Adj Close" in df.columns else "Close"
+    df["Returns"] = df[close_col].pct_change()
     df["Equity"] = (1 + df["Returns"]).cumprod() * INITIAL_CAPITAL
     return df
 
@@ -189,6 +192,9 @@ def main():
     portfolio_df, trades = backtest(data)
 
     metrics = compute_metrics(portfolio_df)
+
+    # restore Date as column after set_index in compute_metrics
+    portfolio_df.reset_index(inplace=True)
 
     print("\nStrategy Metrics:")
     for k, v in metrics.items():
